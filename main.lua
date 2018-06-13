@@ -15,6 +15,8 @@ if arg[#arg] == "-debug" then require("mobdebug").start() end
 heros = {}
 -- On crée une liste qui contiendra nos sprites
 sprites = {}
+-- On créé une liste de tirs
+tirs = {}
 
 -- Création d'un sprite
 function createSprite(pNomImage, pX, pY)
@@ -25,6 +27,7 @@ function createSprite(pNomImage, pX, pY)
   sprite.image = love.graphics.newImage("images/"..pNomImage..".png")
   sprite.largeur = sprite.image:getWidth()
   sprite.hauteur = sprite.image:getHeight()
+  sprite.supprime = false
   
   -- On ajoute à notre liste chaque sprite créé
   table.insert(sprites, sprite)
@@ -43,6 +46,7 @@ function love.load()
   heros = createSprite("heros", largeur/2, hauteur/2)
   heros.y = hauteur - (heros.hauteur*2)
   
+  shootSound = love.audio.newSource("sounds/shoot.wav", "static")
 end
 
 function love.update(dt)
@@ -58,6 +62,26 @@ function love.update(dt)
     heros.x = heros.x + 5
   end
   
+  -- Gestion du tir et purge des listes
+  local n
+  for n=#tirs,1,-1 do
+    local tir = tirs[n]
+    tir.y = tir.y + tir.vitesse
+    -- Vérifier si un tir est sorti de l'écran
+    if tir.y < -10 or tir.y > hauteur then
+      tir.supprime = true
+      table.remove(tirs, n)
+    end
+  end
+  
+  for n=#sprites,1,-1 do
+    if sprites[n].supprime == true then
+      table.remove(sprites, n)
+    end
+  end
+  
+  
+  
 end
 
 function love.draw()
@@ -71,9 +95,15 @@ function love.draw()
     
 end
 
-function love.keypressed(key)
-  
-  
-  print(key)
+function love.mousepressed(x,y,button)
+  -- Création d'un tir
+  if button == 1 then
+    local tir = createSprite("laser1", heros.x, heros.y - heros.hauteur)
+    table.insert(tirs,tir)
+    tir.vitesse = -10
+    shootSound:play()
+  end
+
+  print(button)
   
 end
