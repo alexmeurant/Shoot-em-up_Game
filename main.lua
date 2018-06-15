@@ -21,6 +21,31 @@ tirs = {}
 -- On créé une liste d'aliens
 aliens = {}
 
+-- Niveau 16x12 car taille écran 1024x768
+local niveau = {}
+niveau = {
+          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
+          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
+          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
+          {0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0},
+          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
+          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
+          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
+          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
+          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
+          {0,0,0,0,0,0,2,2,2,2,2,2,2,2,0,0},
+          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+          {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3}
+            }
+
+-- Images des tuiles
+imgTuiles = {}
+local n
+for n=1, 3 do
+  imgTuiles[n] = love.graphics.newImage("images/tuile_"..n..".png")
+end
+
+
 -- Création d'un alien
 function createAlien(pType, pX, pY)
   
@@ -157,6 +182,24 @@ end
 function love.draw()
   
   love.graphics.print("Nombre de sprites : "..tostring(#sprites).." Nombre de tirs : "..tostring(#tirs).." Nombre d'aliens : "..tostring(#aliens), 1, 1)
+  
+  -- On affiche la map
+  local nbLignes = #niveau
+  local x,y
+  x=0
+  y=0
+  local l,c
+  for l=1,nbLignes do
+    for c=1, 16 do
+      local tuile = niveau[l][c]
+      if tuile > 0 then
+        love.graphics.draw(imgTuiles[tuile],x,y,0,2,2)
+      end
+      x = x + 64
+    end
+    x = 0
+    y = y + 64
+  end
   
   -- On affiche chaque sprite présente dans la liste "sprites"
   local n
