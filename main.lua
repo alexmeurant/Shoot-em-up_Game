@@ -76,6 +76,11 @@ camera = {}
 camera.y = 0
 camera.vitesse = 1
 
+-- Retourne l'angle entre 2 points
+function math.angle(x1,y1, x2,y2) 
+
+  return math.atan2(y2-y1, x2-x1) 
+end
 
 -- Création d'un alien
 function createAlien(pType, pX, pY)
@@ -93,6 +98,9 @@ function createAlien(pType, pX, pY)
   end
   
   local alien = createSprite(nomImage, pX, pY)
+  alien.endormi = true
+  alien.chronoTir = 0
+  alien.type = pType
   
   local direction = math.random(0,1) -- 0 ou 1 au hasard
    
@@ -134,6 +142,15 @@ function createSprite(pNomImage, pX, pY)
   return sprite
 end
 
+-- Création d'un tir
+function creerTir(pNomImage, pX, pY, pVitesseX, pVitesseY)
+    local tir = createSprite(pNomImage, pX, pY)
+    table.insert(tirs,tir)
+    tir.vx = pVitesseX
+    tir.vy = pVitesseY
+    shootSound:play()
+end
+
 function love.load()
   
   love.window.setMode(1024, 768)
@@ -142,8 +159,6 @@ function love.load()
   largeur = love.graphics.getWidth()
   hauteur = love.graphics.getHeight()
   
-  
-  
   shootSound = love.audio.newSource("sounds/shoot.wav", "static")
   
   demarreJeu()
@@ -151,21 +166,23 @@ end
 
 function demarreJeu()
   
-  
-  
   -- Création des aliens
   local ligne = 2
   local colonne = 8
   createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
   ligne = 3
   colonne = 12
   createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
   ligne = 6
   colonne = 10
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
   ligne = 10
   colonne = 4
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
   ligne = 19
   colonne = 9
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
@@ -173,6 +190,7 @@ function demarreJeu()
   -- Réinitialisation de la caméra
   camera.y = 0
   
+  -- Création du héros
   heros = createSprite("heros", largeur/2, hauteur/2)
   heros.y = hauteur - (heros.hauteur*2)
 end
@@ -186,19 +204,20 @@ function love.update(dt)
   
   -- Gestion du mouvement du vaisseau et des collisions avec la fenêtre
   if love.keyboard.isDown("up") and heros.y > heros.hauteur then
-    heros.y = heros.y - 5
+    heros.y = heros.y - 6
   elseif love.keyboard.isDown("down") and heros.y < hauteur - heros.hauteur then
-    heros.y = heros.y + 5
+    heros.y = heros.y + 6
   elseif love.keyboard.isDown("left") and heros.x > heros.largeur then
-    heros.x = heros.x - 5
+    heros.x = heros.x - 6
   elseif love.keyboard.isDown("right") and heros.x < largeur - heros.largeur then
-    heros.x = heros.x + 5
+    heros.x = heros.x + 6
   end
   
   -- Gestion du tir
   for n=#tirs,1,-1 do
     local tir = tirs[n]
-    tir.y = tir.y + tir.vitesse
+    tir.x = tir.x + tir.vx
+    tir.y = tir.y + tir.vy
     -- Vérifier si un tir est sorti de l'écran
     if tir.y < -10 or tir.y > hauteur then -- Hero ou Alien shoot
       tir.supprime = true
@@ -218,6 +237,26 @@ function love.update(dt)
     if alien.endormi == false then
       alien.x = alien.x + alien.vx
       alien.y = alien.y + alien.vy
+      
+      -- Gestion du tir des aliens
+      if alien.type == 1 or alien.type == 2 then
+        alien.chronoTir = alien.chronoTir - 1
+        if alien.chronoTir < 0 then 
+          alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les secondes
+          creerTir("laser2", alien.x, alien.y + alien.hauteur, 0, 10)
+        end
+      elseif alien.type == 3 then
+        alien.chronoTir = alien.chronoTir - 1
+        if alien.chronoTir < 0 then
+          alien.chronoTir = math.random(20,30) -- Cet alien tire 3 fois par seconde
+          local vx,vy
+          local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
+          vx = 10 * math.cos(angle)
+          vy= 10 * math.sin(angle)
+          creerTir("laser2", alien.x, alien.y + alien.hauteur, vx, vy)
+        end
+      end
+    
     else
       alien.y = alien.y + camera.vitesse
     end
@@ -271,12 +310,9 @@ function love.draw()
 end
 
 function love.mousepressed(x,y,button)
-  -- Création d'un tir
+  -- Appel de la fonction pour créer un tir
   if button == 1 then
-    local tir = createSprite("laser1", heros.x, heros.y - heros.hauteur)
-    table.insert(tirs,tir)
-    tir.vitesse = -10
-    shootSound:play()
+    creerTir("laser1", heros.x, heros.y - heros.hauteur, 0, -10)
   end
 
   print(button)
