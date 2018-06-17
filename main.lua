@@ -192,7 +192,6 @@ function love.load()
   explosionSound = love.audio.newSource("sounds/explode_touch.wav", "static")
   shootSound:setVolume(0.3)
   
-  
 end
 
 function demarreJeu()
@@ -224,6 +223,8 @@ function demarreJeu()
   -- Création du héros
   heros = createSprite("heros", largeur/2, hauteur/2)
   heros.y = hauteur - (heros.hauteur*2)
+  heros.energie = 5
+  heros.score = 0
 end
 
 -- Update quand on est sur l'écran de jeu
@@ -234,32 +235,35 @@ function updateJeu()
     
     local n
     
-    -- Gestion du mouvement du vaisseau et des collisions avec la fenêtre
-    if love.keyboard.isDown("up") and heros.y > heros.hauteur then
-      heros.y = heros.y - 6
-    elseif love.keyboard.isDown("down") and heros.y < hauteur - heros.hauteur then
-      heros.y = heros.y + 6
-    elseif love.keyboard.isDown("left") and heros.x > heros.largeur then
-      heros.x = heros.x - 6
-    elseif love.keyboard.isDown("right") and heros.x < largeur - heros.largeur then
-      heros.x = heros.x + 6
-    end
-    
-    -- Gestion du tir et des cibles touchées
-    for n=#tirs,1,-1 do
-      local tir = tirs[n]
-      tir.x = tir.x + tir.vx
-      tir.y = tir.y + tir.vy
-      
-      -- Vérifie si un tir d'alien touche le héro
-      if tir.type == "alien" then
-        if collide(tir,heros) then
-          tir.supprime = true
-          table.remove(tirs, n)
-          explosionSound:play()
-          ecran_courant = "gameover"
-        end
+      -- Gestion du mouvement du vaisseau et des collisions avec la fenêtre
+      if love.keyboard.isDown("up") and heros.y > heros.hauteur then
+          heros.y = heros.y - 6
+        elseif love.keyboard.isDown("down") and heros.y < hauteur - heros.hauteur then
+          heros.y = heros.y + 6
+        elseif love.keyboard.isDown("left") and heros.x > heros.largeur then
+          heros.x = heros.x - 6
+        elseif love.keyboard.isDown("right") and heros.x < largeur - heros.largeur then
+          heros.x = heros.x + 6
       end
+    
+      -- Gestion du tir et des cibles touchées
+      for n=#tirs,1,-1 do
+        local tir = tirs[n]
+        tir.x = tir.x + tir.vx
+        tir.y = tir.y + tir.vy
+        
+        -- Vérifie si un tir d'alien touche le héro
+        if tir.type == "alien" then
+          if collide(tir,heros) then
+            tir.supprime = true
+            table.remove(tirs, n)
+            heros.energie = heros.energie - 1
+            if heros.energie <= 0 then
+              explosionSound:play()
+              ecran_courant = "gameover"
+            end
+          end
+        end
       
       -- Vérifie si le tir du héro touche un alien
       if tir.type == "heros" then
@@ -271,9 +275,19 @@ function updateJeu()
             table.remove(tirs, n)
             alien.energie = alien.energie -1
             if alien.energie <= 0 then
+              -- Supression de l'alien abattu
               explosionSound:play()
               alien.supprime = true
               table.remove(aliens, nAlien)
+              
+              -- Maj du score du héro en fonction de l'alien abattu
+              if alien.type == 1 then
+                heros.score = heros.score + 10
+              elseif alien.type == 2 then
+                heros.score = heros.score + 30
+              elseif alien.type == 3 then
+                heros.score = heros.score + 50
+              end
             end
           end
         end
@@ -336,7 +350,9 @@ function updateJeu()
         table.remove(sprites, n)
       end
     end
+
 end
+
 
 
 
@@ -374,6 +390,10 @@ function drawJeu()
     local s = sprites[n]
     love.graphics.draw(s.image, s.x, s.y, 0, 2, 2, s.largeur/2, s.hauteur/2)
   end
+  
+  -- On affiche l'énergie et les vies du héro
+  love.graphics.print("Energie : "..heros.energie, 10, hauteur - 20)
+  love.graphics.print("Score : "..heros.score, largeur - 100, hauteur - 20)
 end
 
 function drawMenu()
