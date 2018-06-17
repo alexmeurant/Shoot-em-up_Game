@@ -73,7 +73,8 @@ end
 
 -- Caméra
 camera = {}
-camera.y = 1
+camera.y = 0
+camera.vitesse = 1
 
 
 -- Création d'un alien
@@ -86,7 +87,7 @@ function createAlien(pType, pX, pY)
   elseif pType == 2 then
     nomImage = "enemy2"
   elseif pType == 3 then
-    nomImage = "enemy3"
+    nomImage = "tourelle"
   elseif pType == 4 then
     nomImage = "enemy4"
   end
@@ -106,7 +107,7 @@ function createAlien(pType, pX, pY)
     end
     alien.vy = 2
   elseif pType == 3 then
-    alien.vx = 2
+    alien.vx = 0
     alien.vy = 1
   elseif pType == 4 then
     alien.vx = 2
@@ -141,7 +142,6 @@ function love.load()
   largeur = love.graphics.getWidth()
   hauteur = love.graphics.getHeight()
   
-  heros = createSprite("heros", largeur/2, hauteur/2)
   
   
   shootSound = love.audio.newSource("sounds/shoot.wav", "static")
@@ -150,20 +150,37 @@ function love.load()
 end
 
 function demarreJeu()
-  heros.y = hauteur - (heros.hauteur*2)
+  
+  
   
   -- Création des aliens
-  createAlien(1, heros.x, -64)
-  createAlien(2, heros.x, -128)
+  local ligne = 2
+  local colonne = 8
+  createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  ligne = 3
+  colonne = 12
+  createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  ligne = 6
+  colonne = 10
+  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  ligne = 10
+  colonne = 4
+  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  ligne = 19
+  colonne = 9
+  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
   -- Réinitialisation de la caméra
   camera.y = 0
+  
+  heros = createSprite("heros", largeur/2, hauteur/2)
+  heros.y = hauteur - (heros.hauteur*2)
 end
 
 function love.update(dt)
   
   -- Défilement de la caméra
-  camera.y = camera.y + 1
+  camera.y = camera.y + camera.vitesse
   
   local n
   
@@ -183,7 +200,7 @@ function love.update(dt)
     local tir = tirs[n]
     tir.y = tir.y + tir.vitesse
     -- Vérifier si un tir est sorti de l'écran
-    if tir.y < -10 or tir.y > hauteur then -- Hero shoot ou Alien shoot
+    if tir.y < -10 or tir.y > hauteur then -- Hero ou Alien shoot
       tir.supprime = true
       table.remove(tirs, n)
     end
@@ -192,7 +209,7 @@ function love.update(dt)
   -- Gestion des aliens
   for n=#aliens,1,-1 do
     local alien = aliens[n]
-    
+    -- On réveille les aliens si visibles à l'écran
     if alien.y > 0 and alien.y <= hauteur then
       alien.endormi = false
     end
@@ -202,7 +219,7 @@ function love.update(dt)
       alien.x = alien.x + alien.vx
       alien.y = alien.y + alien.vy
     else
-      alien.y = alien.y + 1
+      alien.y = alien.y + camera.vitesse
     end
     
     -- Suppression de l'alien si sortie d'écran
