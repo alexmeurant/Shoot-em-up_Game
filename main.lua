@@ -76,6 +76,9 @@ camera = {}
 camera.y = 0
 camera.vitesse = 1
 
+-- Ecran courant
+ecran_courant = "menu"
+
 -- Retourne l'angle entre 2 points
 function math.angle(x1,y1, x2,y2) 
 
@@ -182,11 +185,14 @@ function love.load()
   largeur = love.graphics.getWidth()
   hauteur = love.graphics.getHeight()
   
+  menu = love.graphics.newImage("images/menu.jpg")
+  gameover = love.graphics.newImage("images/gameover.jpg")
+  
   shootSound = love.audio.newSource("sounds/shoot.wav", "static")
   explosionSound = love.audio.newSource("sounds/explode_touch.wav", "static")
   shootSound:setVolume(0.3)
   
-  demarreJeu()
+  
 end
 
 function demarreJeu()
@@ -220,120 +226,130 @@ function demarreJeu()
   heros.y = hauteur - (heros.hauteur*2)
 end
 
-function love.update(dt)
+-- Update quand on est sur l'écran de jeu
+function updateJeu()
   
   -- Défilement de la caméra
-  camera.y = camera.y + camera.vitesse
-  
-  local n
-  
-  -- Gestion du mouvement du vaisseau et des collisions avec la fenêtre
-  if love.keyboard.isDown("up") and heros.y > heros.hauteur then
-    heros.y = heros.y - 6
-  elseif love.keyboard.isDown("down") and heros.y < hauteur - heros.hauteur then
-    heros.y = heros.y + 6
-  elseif love.keyboard.isDown("left") and heros.x > heros.largeur then
-    heros.x = heros.x - 6
-  elseif love.keyboard.isDown("right") and heros.x < largeur - heros.largeur then
-    heros.x = heros.x + 6
-  end
-  
-  -- Gestion du tir et des cibles touchées
-  for n=#tirs,1,-1 do
-    local tir = tirs[n]
-    tir.x = tir.x + tir.vx
-    tir.y = tir.y + tir.vy
+    camera.y = camera.y + camera.vitesse
     
-    -- Vérifie si un tir d'alien touche le héro
-    if tir.type == "alien" then
-      if collide(tir,heros) then
+    local n
+    
+    -- Gestion du mouvement du vaisseau et des collisions avec la fenêtre
+    if love.keyboard.isDown("up") and heros.y > heros.hauteur then
+      heros.y = heros.y - 6
+    elseif love.keyboard.isDown("down") and heros.y < hauteur - heros.hauteur then
+      heros.y = heros.y + 6
+    elseif love.keyboard.isDown("left") and heros.x > heros.largeur then
+      heros.x = heros.x - 6
+    elseif love.keyboard.isDown("right") and heros.x < largeur - heros.largeur then
+      heros.x = heros.x + 6
+    end
+    
+    -- Gestion du tir et des cibles touchées
+    for n=#tirs,1,-1 do
+      local tir = tirs[n]
+      tir.x = tir.x + tir.vx
+      tir.y = tir.y + tir.vy
+      
+      -- Vérifie si un tir d'alien touche le héro
+      if tir.type == "alien" then
+        if collide(tir,heros) then
+          tir.supprime = true
+          table.remove(tirs, n)
+          explosionSound:play()
+          ecran_courant = "gameover"
+        end
+      end
+      
+      -- Vérifie si le tir du héro touche un alien
+      if tir.type == "heros" then
+        local nAlien
+        for nAlien=#aliens,1,-1 do
+          local alien = aliens[nAlien]
+          if collide(tir,alien) then
+            tir.supprime = true
+            table.remove(tirs, n)
+            alien.energie = alien.energie -1
+            if alien.energie <= 0 then
+              explosionSound:play()
+              alien.supprime = true
+              table.remove(aliens, nAlien)
+            end
+          end
+        end
+      end
+      
+      -- Vérifier si un tir est sorti de l'écran
+      if (tir.y < -10 or tir.y > hauteur) and tir.supprime == false then -- Hero ou Alien shoot
         tir.supprime = true
         table.remove(tirs, n)
       end
     end
     
-    -- Vérifie si le tir du héro touche un alien
-    if tir.type == "heros" then
-      local nAlien
-      for nAlien=#aliens,1,-1 do
-        local alien = aliens[nAlien]
-        if collide(tir,alien) then
-          tir.supprime = true
-          table.remove(tirs, n)
-          alien.energie = alien.energie -1
-          if alien.energie <= 0 then
-            explosionSound:play()
-            alien.supprime = true
-            table.remove(aliens, nAlien)
+    -- Gestion des aliens
+    for n=#aliens,1,-1 do
+      local alien = aliens[n]
+      -- On réveille les aliens si visibles à l'écran
+      if alien.y > 0 and alien.y <= hauteur then
+        alien.endormi = false
+      end
+      
+      -- Déplacement des aliens
+      if alien.endormi == false then
+        alien.x = alien.x + alien.vx
+        alien.y = alien.y + alien.vy
+        
+        -- Gestion du tir des aliens
+        if alien.type == 1 or alien.type == 2 then
+          alien.chronoTir = alien.chronoTir - 1
+          if alien.chronoTir < 0 then 
+            alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les secondes
+            creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
+          end
+        elseif alien.type == 3 then
+          alien.chronoTir = alien.chronoTir - 1
+          if alien.chronoTir < 0 then
+            alien.chronoTir = math.random(20,30) -- Cet alien tire 3 fois par seconde
+            local vx,vy
+            local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
+            vx = 10 * math.cos(angle)
+            vy= 10 * math.sin(angle)
+            creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, vx, vy)
           end
         end
-      end
-    end
-    
-    -- Vérifier si un tir est sorti de l'écran
-    if tir.y < -10 or tir.y > hauteur then -- Hero ou Alien shoot
-      tir.supprime = true
-      table.remove(tirs, n)
-    end
-  end
-  
-  -- Gestion des aliens
-  for n=#aliens,1,-1 do
-    local alien = aliens[n]
-    -- On réveille les aliens si visibles à l'écran
-    if alien.y > 0 and alien.y <= hauteur then
-      alien.endormi = false
-    end
-    
-    -- Déplacement des aliens
-    if alien.endormi == false then
-      alien.x = alien.x + alien.vx
-      alien.y = alien.y + alien.vy
       
-      -- Gestion du tir des aliens
-      if alien.type == 1 or alien.type == 2 then
-        alien.chronoTir = alien.chronoTir - 1
-        if alien.chronoTir < 0 then 
-          alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les secondes
-          creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
-        end
-      elseif alien.type == 3 then
-        alien.chronoTir = alien.chronoTir - 1
-        if alien.chronoTir < 0 then
-          alien.chronoTir = math.random(20,30) -- Cet alien tire 3 fois par seconde
-          local vx,vy
-          local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
-          vx = 10 * math.cos(angle)
-          vy= 10 * math.sin(angle)
-          creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, vx, vy)
-        end
+      else
+        alien.y = alien.y + camera.vitesse
       end
-    
-    else
-      alien.y = alien.y + camera.vitesse
+      
+      -- Suppression de l'alien si sortie d'écran
+      if alien.y > hauteur then
+        alien.supprime = true
+        table.remove(aliens, n)
+      end
+      
     end
     
-    -- Suppression de l'alien si sortie d'écran
-    if alien.y > hauteur then
-      alien.supprime = true
-      table.remove(aliens, n)
+    -- Purge des sprites
+    for n=#sprites,1,-1 do
+      if sprites[n].supprime == true then
+        table.remove(sprites, n)
+      end
     end
-    
-  end
+end
+
+
+
+
+function love.update(dt)
   
-  -- Purge des sprites
-  for n=#sprites,1,-1 do
-    if sprites[n].supprime == true then
-      table.remove(sprites, n)
-    end
+  if ecran_courant == "jeu" then
+    updateJeu()
   end
   
 end
 
-function love.draw()
-  
-  love.graphics.print("Nombre de sprites : "..tostring(#sprites).." Nombre de tirs : "..tostring(#tirs).." Nombre d'aliens : "..tostring(#aliens), 1, 1)
-  
+function drawJeu()
   -- On affiche la map
   local nbLignes = #niveau
   local x,y
@@ -358,15 +374,44 @@ function love.draw()
     local s = sprites[n]
     love.graphics.draw(s.image, s.x, s.y, 0, 2, 2, s.largeur/2, s.hauteur/2)
   end
-    
+end
+
+function drawMenu()
+  love.graphics.draw(menu, 0, 0)
+end
+
+function drawGameOver()
+  love.graphics.draw(gameover, 0, 0)
+end
+
+function love.draw()
+  if ecran_courant == "jeu" then
+    drawJeu()
+  elseif ecran_courant == "menu" then
+    drawMenu()
+  elseif ecran_courant == "gameover" then
+    drawGameOver()
+  end
 end
 
 function love.mousepressed(x,y,button)
-  -- Appel de la fonction pour créer un tir
-  if button == 1 then
-    creerTir("heros", "laser1", heros.x, heros.y - heros.hauteur, 0, -10)
+  if ecran_courant == "jeu" then
+    -- Appel de la fonction pour créer un tir
+    if button == 1 then
+      creerTir("heros", "laser1", heros.x, heros.y - heros.hauteur, 0, -10)
+    end
   end
+end
 
-  print(button)
-  
+function love.keypressed(key)
+  if ecran_courant == "menu" then
+    if key == "space" then
+      ecran_courant = "jeu"
+      demarreJeu()
+    end
+  elseif ecran_courant == "gameover" then
+    if key == "space" then
+      love.event.quit( "restart" )
+    end
+  end
 end
