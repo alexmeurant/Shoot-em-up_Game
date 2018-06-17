@@ -71,6 +71,13 @@ for n=1, 3 do
   imgTuiles[n] = love.graphics.newImage("images/tuile_"..n..".png")
 end
 
+-- Images de l'explosion
+imgExplosion = {}
+local n
+for n=1, 5 do
+  imgExplosion[n] = love.graphics.newImage("images/explode_"..n..".png")
+end
+
 -- Caméra
 camera = {}
 camera.y = 0
@@ -142,10 +149,22 @@ function createSprite(pNomImage, pX, pY)
   sprite.hauteur = sprite.image:getHeight()
   sprite.supprime = false
   
+  sprite.frame = 1
+  sprite.frames = {}
+  sprite.maxFrame = 1
+  
   -- On ajoute à notre liste chaque sprite créé
   table.insert(sprites, sprite)
   
   return sprite
+end
+
+-- Affichage de l'explosion
+function createExplosion(pX, pY)
+  local newExplosion = createSprite("explode_1", pX, pY)
+  -- On modifie les valeurs par défaut d'un sprite
+  newExplosion.frames = imgExplosion
+  newExplosion.maxFrame = 5
 end
 
 -- Création d'un tir
@@ -259,6 +278,10 @@ function updateJeu()
             table.remove(tirs, n)
             heros.energie = heros.energie - 1
             if heros.energie <= 0 then
+              local n
+              for n=1,5 do
+                createExplosion(heros.x + math.random(-20,20), heros.y + math.random(-20,20))
+              end
               explosionSound:play()
               ecran_courant = "gameover"
             end
@@ -273,9 +296,14 @@ function updateJeu()
           if collide(tir,alien) then
             tir.supprime = true
             table.remove(tirs, n)
+            createExplosion(alien.x, alien.y)
             alien.energie = alien.energie -1
             if alien.energie <= 0 then
               -- Supression de l'alien abattu
+              local n
+              for n=1,5 do
+                createExplosion(alien.x + math.random(-20,20), alien.y + math.random(-20,20))
+              end
               explosionSound:play()
               alien.supprime = true
               table.remove(aliens, nAlien)
@@ -344,9 +372,21 @@ function updateJeu()
       
     end
     
-    -- Purge des sprites
+    -- Traitement et purge des sprites
     for n=#sprites,1,-1 do
-      if sprites[n].supprime == true then
+      local sprite = sprites[n]
+      -- Le sprite est-il animé ?
+      if sprite.maxFrame > 1 then
+        sprite.frame = sprite.frame + 0.2
+        local nextFrame = math.floor(sprite.frame)
+        if nextFrame > sprite.maxFrame then
+          sprite.supprime = true
+        else
+          sprite.image = sprite.frames[nextFrame]
+        end
+      end
+      -- Suppression d'un sprite à purger
+      if sprite.supprime == true then
         table.remove(sprites, n)
       end
     end
