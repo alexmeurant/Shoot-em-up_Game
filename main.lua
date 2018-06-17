@@ -107,6 +107,7 @@ function createAlien(pType, pX, pY)
   if pType == 1 then
     alien.vx = 0
     alien.vy = 2
+    alien.energie = 1
   elseif pType == 2 then
     if direction == 1 then
       alien.vx = 1
@@ -114,9 +115,11 @@ function createAlien(pType, pX, pY)
       alien.vx = -1
     end
     alien.vy = 2
+    alien.energie = 3
   elseif pType == 3 then
     alien.vx = 0
     alien.vy = 1
+    alien.energie = 5
   elseif pType == 4 then
     alien.vx = 2
     alien.vy = 0
@@ -143,13 +146,33 @@ function createSprite(pNomImage, pX, pY)
 end
 
 -- Création d'un tir
-function creerTir(pNomImage, pX, pY, pVitesseX, pVitesseY)
+function creerTir(pType, pNomImage, pX, pY, pVitesseX, pVitesseY)
     local tir = createSprite(pNomImage, pX, pY)
     table.insert(tirs,tir)
     tir.vx = pVitesseX
     tir.vy = pVitesseY
+    tir.type = pType
     shootSound:play()
 end
+
+-- Gestion de la collision
+function collide(a1, a2)
+  local dx = a1.x - a2.x
+  local dy = a1.y - a2.y
+  
+  if (a1==a2) then 
+    return false
+  end
+  
+  if (math.abs(dx) < a1.image:getWidth()+a2.image:getWidth()) then
+    if (math.abs(dy) < a1.image:getHeight()+a2.image:getHeight()) then
+      return true
+    end
+  end
+  
+  return false
+end
+
 
 function love.load()
   
@@ -160,6 +183,8 @@ function love.load()
   hauteur = love.graphics.getHeight()
   
   shootSound = love.audio.newSource("sounds/shoot.wav", "static")
+  explosionSound = love.audio.newSource("sounds/explode_touch.wav", "static")
+  shootSound:setVolume(0.3)
   
   demarreJeu()
 end
@@ -213,11 +238,38 @@ function love.update(dt)
     heros.x = heros.x + 6
   end
   
-  -- Gestion du tir
+  -- Gestion du tir et des cibles touchées
   for n=#tirs,1,-1 do
     local tir = tirs[n]
     tir.x = tir.x + tir.vx
     tir.y = tir.y + tir.vy
+    
+    -- Vérifie si un tir d'alien touche le héro
+    if tir.type == "alien" then
+      if collide(tir,heros) then
+        tir.supprime = true
+        table.remove(tirs, n)
+      end
+    end
+    
+    -- Vérifie si le tir du héro touche un alien
+    if tir.type == "heros" then
+      local nAlien
+      for nAlien=#aliens,1,-1 do
+        local alien = aliens[nAlien]
+        if collide(tir,alien) then
+          tir.supprime = true
+          table.remove(tirs, n)
+          alien.energie = alien.energie -1
+          if alien.energie <= 0 then
+            explosionSound:play()
+            alien.supprime = true
+            table.remove(aliens, nAlien)
+          end
+        end
+      end
+    end
+    
     -- Vérifier si un tir est sorti de l'écran
     if tir.y < -10 or tir.y > hauteur then -- Hero ou Alien shoot
       tir.supprime = true
@@ -243,7 +295,7 @@ function love.update(dt)
         alien.chronoTir = alien.chronoTir - 1
         if alien.chronoTir < 0 then 
           alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les secondes
-          creerTir("laser2", alien.x, alien.y + alien.hauteur, 0, 10)
+          creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
         end
       elseif alien.type == 3 then
         alien.chronoTir = alien.chronoTir - 1
@@ -253,7 +305,7 @@ function love.update(dt)
           local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
           vx = 10 * math.cos(angle)
           vy= 10 * math.sin(angle)
-          creerTir("laser2", alien.x, alien.y + alien.hauteur, vx, vy)
+          creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, vx, vy)
         end
       end
     
@@ -312,7 +364,7 @@ end
 function love.mousepressed(x,y,button)
   -- Appel de la fonction pour créer un tir
   if button == 1 then
-    creerTir("laser1", heros.x, heros.y - heros.hauteur, 0, -10)
+    creerTir("heros", "laser1", heros.x, heros.y - heros.hauteur, 0, -10)
   end
 
   print(button)
