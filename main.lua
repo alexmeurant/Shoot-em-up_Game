@@ -153,8 +153,8 @@ function demarreJeu()
   heros.y = hauteur - (heros.hauteur*2)
   
   -- Création des aliens
-  createAlien(1, heros.x, 100)
-  createAlien(2, heros.x, 50)
+  createAlien(1, heros.x, -64)
+  createAlien(2, heros.x, -128)
   
   -- Réinitialisation de la caméra
   camera.y = 0
@@ -193,9 +193,17 @@ function love.update(dt)
   for n=#aliens,1,-1 do
     local alien = aliens[n]
     
+    if alien.y > 0 and alien.y <= hauteur then
+      alien.endormi = false
+    end
+    
     -- Déplacement des aliens
-    alien.x = alien.x + alien.vx
-    alien.y = alien.y + alien.vy
+    if alien.endormi == false then
+      alien.x = alien.x + alien.vx
+      alien.y = alien.y + alien.vy
+    else
+      alien.y = alien.y + 1
+    end
     
     -- Suppression de l'alien si sortie d'écran
     if alien.y > hauteur then
