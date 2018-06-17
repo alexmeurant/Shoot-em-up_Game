@@ -45,6 +45,10 @@ for n=1, 3 do
   imgTuiles[n] = love.graphics.newImage("images/tuile_"..n..".png")
 end
 
+-- Caméra
+camera = {}
+camera.y = 1
+
 
 -- Création d'un alien
 function createAlien(pType, pX, pY)
@@ -126,9 +130,14 @@ function demarreJeu()
   createAlien(1, heros.x, 100)
   createAlien(2, heros.x, 50)
   
+  -- Réinitialisation de la caméra
+  camera.y = 0
 end
 
 function love.update(dt)
+  
+  -- Défilement de la caméra
+  camera.y = camera.y + 1
   
   local n
   
@@ -187,9 +196,9 @@ function love.draw()
   local nbLignes = #niveau
   local x,y
   x=0
-  y=0
+  y= (0-64) + camera.y -- On fait défiler la map en fonction de la caméra
   local l,c
-  for l=1,nbLignes do
+  for l=nbLignes,1,-1 do
     for c=1, 16 do
       local tuile = niveau[l][c]
       if tuile > 0 then
@@ -198,7 +207,7 @@ function love.draw()
       x = x + 64
     end
     x = 0
-    y = y + 64
+    y = y - 64
   end
   
   -- On affiche chaque sprite présente dans la liste "sprites"
