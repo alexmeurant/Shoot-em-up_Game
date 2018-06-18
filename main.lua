@@ -104,7 +104,7 @@ function createAlien(pType, pX, pY)
   elseif pType == 3 then
     nomImage = "tourelle"
   elseif pType == 4 then
-    nomImage = "enemy4"
+    nomImage = "enemy3"
   end
   
   local alien = createSprite(nomImage, pX, pY)
@@ -132,7 +132,8 @@ function createAlien(pType, pX, pY)
     alien.energie = 5
   elseif pType == 4 then
     alien.vx = 2
-    alien.vy = 0
+    alien.vy = 2
+    alien.energie = 20
   end
   
   table.insert(aliens, alien)
@@ -206,6 +207,7 @@ function love.load()
   
   menu = love.graphics.newImage("images/menu.jpg")
   gameover = love.graphics.newImage("images/gameover.jpg")
+  victoire = love.graphics.newImage("images/victory.jpg")
   
   shootSound = love.audio.newSource("sounds/shoot.wav", "static")
   explosionSound = love.audio.newSource("sounds/explode_touch.wav", "static")
@@ -228,6 +230,14 @@ function demarreJeu()
   colonne = 10
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
+  ligne = 8
+  colonne = 5
+  createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
+  ligne = 9
+  colonne = 8
+  createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
   ligne = 10
   colonne = 4
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
@@ -236,13 +246,38 @@ function demarreJeu()
   colonne = 9
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
+  ligne = 21
+  colonne = 3
+  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
+  ligne = 22
+  colonne = 5
+  createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
+  ligne = 27
+  colonne = 8
+  createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
+  ligne = 29
+  colonne = 9
+  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
+  ligne = 35
+  colonne = 4
+  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
+  -- Création du Boss
+  ligne = 37
+  colonne = 8
+  createAlien(4, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+  
   -- Réinitialisation de la caméra
   camera.y = 0
   
   -- Création du héros
   heros = createSprite("heros", largeur/2, hauteur/2)
   heros.y = hauteur - (heros.hauteur*2)
-  heros.energie = 5
+  heros.energie = 10
   heros.score = 0
 end
 
@@ -293,28 +328,33 @@ function updateJeu()
         local nAlien
         for nAlien=#aliens,1,-1 do
           local alien = aliens[nAlien]
-          if collide(tir,alien) then
-            tir.supprime = true
-            table.remove(tirs, n)
-            createExplosion(alien.x, alien.y)
-            alien.energie = alien.energie -1
-            if alien.energie <= 0 then
-              -- Supression de l'alien abattu
-              local n
-              for n=1,5 do
-                createExplosion(alien.x + math.random(-20,20), alien.y + math.random(-20,20))
-              end
-              explosionSound:play()
-              alien.supprime = true
-              table.remove(aliens, nAlien)
-              
-              -- Maj du score du héro en fonction de l'alien abattu
-              if alien.type == 1 then
-                heros.score = heros.score + 10
-              elseif alien.type == 2 then
-                heros.score = heros.score + 30
-              elseif alien.type == 3 then
-                heros.score = heros.score + 50
+          if alien.endormi == false then
+            if collide(tir,alien) then
+              tir.supprime = true
+              table.remove(tirs, n)
+              createExplosion(alien.x, alien.y)
+              alien.energie = alien.energie -1
+              if alien.energie <= 0 then
+                -- Supression de l'alien abattu
+                local n
+                for n=1,5 do
+                  createExplosion(alien.x + math.random(-20,20), alien.y + math.random(-20,20))
+                end
+                explosionSound:play()
+                if alien.type == 4 then
+                  ecran_courant = "victoire"
+                end
+                alien.supprime = true
+                table.remove(aliens, nAlien)
+                
+                -- Maj du score du héro en fonction de l'alien abattu
+                if alien.type == 1 then
+                  heros.score = heros.score + 10
+                elseif alien.type == 2 then
+                  heros.score = heros.score + 30
+                elseif alien.type == 3 then
+                  heros.score = heros.score + 50
+                end
               end
             end
           end
@@ -337,7 +377,7 @@ function updateJeu()
       end
       
       -- Déplacement des aliens
-      if alien.endormi == false then
+      if alien.endormi == false and (alien.type == 1 or alien.type == 2 or alien.type == 3) then
         alien.x = alien.x + alien.vx
         alien.y = alien.y + alien.vy
         
@@ -345,13 +385,13 @@ function updateJeu()
         if alien.type == 1 or alien.type == 2 then
           alien.chronoTir = alien.chronoTir - 1
           if alien.chronoTir < 0 then 
-            alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les secondes
+            alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les 1 à 2 secondes
             creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
           end
         elseif alien.type == 3 then
           alien.chronoTir = alien.chronoTir - 1
           if alien.chronoTir < 0 then
-            alien.chronoTir = math.random(20,30) -- Cet alien tire 3 fois par seconde
+            alien.chronoTir = math.random(20,30) -- Cet alien tire 3 fois par seconde environ
             local vx,vy
             local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
             vx = 10 * math.cos(angle)
@@ -359,9 +399,31 @@ function updateJeu()
             creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, vx, vy)
           end
         end
-      
       else
         alien.y = alien.y + camera.vitesse
+      end
+      
+      -- Traitement du Boss
+      if alien.endormi == false and alien.type == 4 then
+        
+        -- Gestion du tir du Boss
+        alien.chronoTir = alien.chronoTir - 1
+          if alien.chronoTir < 0 then
+            alien.chronoTir = math.random(20,30) -- Le boss tire 3 fois par seconde environ
+            creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
+          end
+          
+        -- Gestion du déplacement
+        alien.y = alien.y - camera.vitesse -- Annule le déplacement pendant la phase d'endormissement
+        local vx,vy
+          local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
+          vx = 3*math.cos(angle)
+          vy= 3*math.sin(angle)
+          alien.x = alien.x + vx
+          alien.y = alien.y + vy
+        if alien.y >= (hauteur/2) then
+          alien.y = alien.y - vy
+        end
       end
       
       -- Suppression de l'alien si sortie d'écran
@@ -390,7 +452,6 @@ function updateJeu()
         table.remove(sprites, n)
       end
     end
-
 end
 
 
@@ -434,6 +495,7 @@ function drawJeu()
   -- On affiche l'énergie et les vies du héro
   love.graphics.print("Energie : "..heros.energie, 10, hauteur - 20)
   love.graphics.print("Score : "..heros.score, largeur - 100, hauteur - 20)
+  
 end
 
 function drawMenu()
@@ -444,6 +506,10 @@ function drawGameOver()
   love.graphics.draw(gameover, 0, 0)
 end
 
+function drawVictoire()
+  love.graphics.draw(victoire, 0, 0)
+end
+
 function love.draw()
   if ecran_courant == "jeu" then
     drawJeu()
@@ -451,6 +517,8 @@ function love.draw()
     drawMenu()
   elseif ecran_courant == "gameover" then
     drawGameOver()
+  elseif ecran_courant == "victoire" then
+    drawVictoire()
   end
 end
 
@@ -470,6 +538,10 @@ function love.keypressed(key)
       demarreJeu()
     end
   elseif ecran_courant == "gameover" then
+    if key == "space" then
+      love.event.quit( "restart" )
+    end
+  elseif ecran_courant == "victoire" then
     if key == "space" then
       love.event.quit( "restart" )
     end
