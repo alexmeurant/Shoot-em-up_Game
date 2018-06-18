@@ -213,9 +213,15 @@ function love.load()
   explosionSound = love.audio.newSource("sounds/explode_touch.wav", "static")
   shootSound:setVolume(0.3)
   
+  gameSound = love.audio.newSource("sounds/gameSound.mp3", "stream")
+  gameSound:setVolume(0.3)
+  bossSound = love.audio.newSource("sounds/bossSound.mp3", "stream")
+  
 end
 
 function demarreJeu()
+  
+  gameSound:play()
   
   -- Création des aliens
   local ligne = 2
@@ -250,7 +256,7 @@ function demarreJeu()
   colonne = 3
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
-  ligne = 22
+  ligne = 23
   colonne = 5
   createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
@@ -267,7 +273,7 @@ function demarreJeu()
   createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
   -- Création du Boss
-  ligne = 37
+  ligne = 42
   colonne = 8
   createAlien(4, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
   
@@ -319,6 +325,8 @@ function updateJeu()
               end
               explosionSound:play()
               ecran_courant = "gameover"
+              bossSound:setVolume(0)
+              gameSound:setVolume(0)
             end
           end
         end
@@ -343,6 +351,7 @@ function updateJeu()
                 explosionSound:play()
                 if alien.type == 4 then
                   ecran_courant = "victoire"
+                  bossSound:setVolume(0)
                 end
                 alien.supprime = true
                 table.remove(aliens, nAlien)
@@ -405,6 +414,12 @@ function updateJeu()
       
       -- Traitement du Boss
       if alien.endormi == false and alien.type == 4 then
+        
+        -- Musique du Boss
+        if alien.y >= - 50 then
+          gameSound:setVolume(0)
+          bossSound:play(0.5)
+        end
         
         -- Gestion du tir du Boss
         alien.chronoTir = alien.chronoTir - 1
