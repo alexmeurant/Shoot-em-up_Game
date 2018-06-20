@@ -10,6 +10,9 @@ if arg[#arg] == "-debug" then require("mobdebug").start() end
 
 -------------------------------------------------------------------------------------
 
+local updateJeu = require("updateJeu")
+local newGame = require("demarreJeu")
+
 math.randomseed(os.time()) -- Permet d'obtenir un bon nombre aléatoire
 
 -- On crée un héros
@@ -24,50 +27,97 @@ aliens = {}
 -- Niveau 16x12 car taille écran 1024x768
 local niveau = {}
 niveau = {
-          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,2,2,2,2,2,2,2,2,0,0},
-          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-          {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3},
-          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,2,2,2,2,2,2,2,2,0,0},
-          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0},
-          {0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0},
-          {0,0,0,0,0,0,2,2,2,2,2,2,2,2,0,0},
-          {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-          {3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3}
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+          {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
             }
 
 -- Images des tuiles
 imgTuiles = {}
 local n
-for n=1, 3 do
+for n=1, 2 do
   imgTuiles[n] = love.graphics.newImage("images/tuile_"..n..".png")
 end
 
@@ -86,6 +136,9 @@ camera.vitesse = 1
 -- Ecran courant
 ecran_courant = "menu"
 
+timerVictoire = 0
+timerGameOver = 0
+
 -- Retourne l'angle entre 2 points
 function math.angle(x1,y1, x2,y2) 
 
@@ -99,12 +152,15 @@ function createAlien(pType, pX, pY)
   
   if pType == 1 then
     nomImage = "enemy1"
+    ombreImage = "enemy1_ombre"
   elseif pType == 2 then
     nomImage = "enemy2"
+    ombreImage = "enemy2_ombre"
   elseif pType == 3 then
     nomImage = "tourelle"
   elseif pType == 4 then
     nomImage = "enemy3"
+    ombreImage = "enemy3_ombre"
   end
   
   local alien = createSprite(nomImage, pX, pY)
@@ -118,6 +174,7 @@ function createAlien(pType, pX, pY)
     alien.vx = 0
     alien.vy = 2
     alien.energie = 1
+    alien.alien_ombre = createSprite(ombreImage, pX + 30, pY + 30)
   elseif pType == 2 then
     if direction == 1 then
       alien.vx = 1
@@ -126,6 +183,7 @@ function createAlien(pType, pX, pY)
     end
     alien.vy = 2
     alien.energie = 3
+    alien.alien_ombre = createSprite(ombreImage, pX + 30, pY + 30)
   elseif pType == 3 then
     alien.vx = 0
     alien.vy = 1
@@ -134,6 +192,7 @@ function createAlien(pType, pX, pY)
     alien.vx = 2
     alien.vy = 2
     alien.energie = 20
+    alien.alien_ombre = createSprite(ombreImage, pX + 50, pY + 50)
   end
   
   table.insert(aliens, alien)
@@ -187,8 +246,8 @@ function collide(a1, a2)
     return false
   end
   
-  if (math.abs(dx) < a1.image:getWidth()+a2.image:getWidth()) then
-    if (math.abs(dy) < a1.image:getHeight()+a2.image:getHeight()) then
+  if (math.abs(dx) < a1.image:getWidth()/2+a2.image:getWidth()/2) then
+    if (math.abs(dy) < a1.image:getHeight()/2+a2.image:getHeight()/2) then
       return true
     end
   end
@@ -219,264 +278,11 @@ function love.load()
   
 end
 
-function demarreJeu()
-  
-  gameSound:play()
-  
-  -- Création des aliens
-  local ligne = 2
-  local colonne = 8
-  createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 3
-  colonne = 12
-  createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 6
-  colonne = 10
-  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 8
-  colonne = 5
-  createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 9
-  colonne = 8
-  createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 10
-  colonne = 4
-  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 19
-  colonne = 9
-  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 21
-  colonne = 3
-  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 23
-  colonne = 5
-  createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 27
-  colonne = 8
-  createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 29
-  colonne = 9
-  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  ligne = 35
-  colonne = 4
-  createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  -- Création du Boss
-  ligne = 42
-  colonne = 8
-  createAlien(4, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
-  
-  -- Réinitialisation de la caméra
-  camera.y = 0
-  
-  -- Création du héros
-  heros = createSprite("heros", largeur/2, hauteur/2)
-  heros.y = hauteur - (heros.hauteur*2)
-  heros.energie = 10
-  heros.score = 0
-end
-
--- Update quand on est sur l'écran de jeu
-function updateJeu()
-  
-  -- Défilement de la caméra
-    camera.y = camera.y + camera.vitesse
-    
-    local n
-    
-      -- Gestion du mouvement du vaisseau et des collisions avec la fenêtre
-      if love.keyboard.isDown("up") and heros.y > heros.hauteur then
-          heros.y = heros.y - 6
-        elseif love.keyboard.isDown("down") and heros.y < hauteur - heros.hauteur then
-          heros.y = heros.y + 6
-        elseif love.keyboard.isDown("left") and heros.x > heros.largeur then
-          heros.x = heros.x - 6
-        elseif love.keyboard.isDown("right") and heros.x < largeur - heros.largeur then
-          heros.x = heros.x + 6
-      end
-    
-      -- Gestion du tir et des cibles touchées
-      for n=#tirs,1,-1 do
-        local tir = tirs[n]
-        tir.x = tir.x + tir.vx
-        tir.y = tir.y + tir.vy
-        
-        -- Vérifie si un tir d'alien touche le héro
-        if tir.type == "alien" then
-          if collide(tir,heros) then
-            tir.supprime = true
-            table.remove(tirs, n)
-            heros.energie = heros.energie - 1
-            if heros.energie <= 0 then
-              local n
-              for n=1,5 do
-                createExplosion(heros.x + math.random(-20,20), heros.y + math.random(-20,20))
-              end
-              explosionSound:play()
-              ecran_courant = "gameover"
-              bossSound:setVolume(0)
-              gameSound:setVolume(0)
-            end
-          end
-        end
-      
-      -- Vérifie si le tir du héro touche un alien
-      if tir.type == "heros" then
-        local nAlien
-        for nAlien=#aliens,1,-1 do
-          local alien = aliens[nAlien]
-          if alien.endormi == false then
-            if collide(tir,alien) then
-              tir.supprime = true
-              table.remove(tirs, n)
-              createExplosion(alien.x, alien.y)
-              alien.energie = alien.energie -1
-              if alien.energie <= 0 then
-                -- Supression de l'alien abattu
-                local n
-                for n=1,5 do
-                  createExplosion(alien.x + math.random(-20,20), alien.y + math.random(-20,20))
-                end
-                explosionSound:play()
-                if alien.type == 4 then
-                  ecran_courant = "victoire"
-                  bossSound:setVolume(0)
-                end
-                alien.supprime = true
-                table.remove(aliens, nAlien)
-                
-                -- Maj du score du héro en fonction de l'alien abattu
-                if alien.type == 1 then
-                  heros.score = heros.score + 10
-                elseif alien.type == 2 then
-                  heros.score = heros.score + 30
-                elseif alien.type == 3 then
-                  heros.score = heros.score + 50
-                end
-              end
-            end
-          end
-        end
-      end
-      
-      -- Vérifier si un tir est sorti de l'écran
-      if (tir.y < -10 or tir.y > hauteur) and tir.supprime == false then -- Hero ou Alien shoot
-        tir.supprime = true
-        table.remove(tirs, n)
-      end
-    end
-    
-    -- Gestion des aliens
-    for n=#aliens,1,-1 do
-      local alien = aliens[n]
-      -- On réveille les aliens si visibles à l'écran
-      if alien.y > 0 and alien.y <= hauteur then
-        alien.endormi = false
-      end
-      
-      -- Déplacement des aliens
-      if alien.endormi == false and (alien.type == 1 or alien.type == 2 or alien.type == 3) then
-        alien.x = alien.x + alien.vx
-        alien.y = alien.y + alien.vy
-        
-        -- Gestion du tir des aliens
-        if alien.type == 1 or alien.type == 2 then
-          alien.chronoTir = alien.chronoTir - 1
-          if alien.chronoTir < 0 then 
-            alien.chronoTir = math.random(60,100) -- Les aliens tire toutes les 1 à 2 secondes
-            creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
-          end
-        elseif alien.type == 3 then
-          alien.chronoTir = alien.chronoTir - 1
-          if alien.chronoTir < 0 then
-            alien.chronoTir = math.random(20,30) -- Cet alien tire 3 fois par seconde environ
-            local vx,vy
-            local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
-            vx = 10 * math.cos(angle)
-            vy= 10 * math.sin(angle)
-            creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, vx, vy)
-          end
-        end
-      else
-        alien.y = alien.y + camera.vitesse
-      end
-      
-      -- Traitement du Boss
-      if alien.endormi == false and alien.type == 4 then
-        
-        -- Musique du Boss
-        if alien.y >= - 50 then
-          gameSound:setVolume(0)
-          bossSound:play(0.5)
-        end
-        
-        -- Gestion du tir du Boss
-        alien.chronoTir = alien.chronoTir - 1
-          if alien.chronoTir < 0 then
-            alien.chronoTir = math.random(20,30) -- Le boss tire 3 fois par seconde environ
-            creerTir("alien", "laser2", alien.x, alien.y + alien.hauteur, 0, 10)
-          end
-          
-        -- Gestion du déplacement
-        alien.y = alien.y - camera.vitesse -- Annule le déplacement pendant la phase d'endormissement
-        local vx,vy
-          local angle = math.angle(alien.x, alien.y, heros.x, heros.y)
-          vx = 3*math.cos(angle)
-          vy= 3*math.sin(angle)
-          alien.x = alien.x + vx
-          alien.y = alien.y + vy
-        if alien.y >= (hauteur/2) then
-          alien.y = alien.y - vy
-        end
-      end
-      
-      -- Suppression de l'alien si sortie d'écran
-      if alien.y > hauteur then
-        alien.supprime = true
-        table.remove(aliens, n)
-      end
-      
-    end
-    
-    -- Traitement et purge des sprites
-    for n=#sprites,1,-1 do
-      local sprite = sprites[n]
-      -- Le sprite est-il animé ?
-      if sprite.maxFrame > 1 then
-        sprite.frame = sprite.frame + 0.2
-        local nextFrame = math.floor(sprite.frame)
-        if nextFrame > sprite.maxFrame then
-          sprite.supprime = true
-        else
-          sprite.image = sprite.frames[nextFrame]
-        end
-      end
-      -- Suppression d'un sprite à purger
-      if sprite.supprime == true then
-        table.remove(sprites, n)
-      end
-    end
-end
-
-
-
-
 
 function love.update(dt)
   
   if ecran_courant == "jeu" then
-    updateJeu()
+    updateJeu.updateJeu()
   end
   
 end
@@ -492,7 +298,7 @@ function drawJeu()
     for c=1, 16 do
       local tuile = niveau[l][c]
       if tuile > 0 then
-        love.graphics.draw(imgTuiles[tuile],x,y,0,2,2)
+        love.graphics.draw(imgTuiles[tuile],x,y,0,1,1)
       end
       x = x + 64
     end
@@ -504,13 +310,14 @@ function drawJeu()
   local n
   for n=1,#sprites do
     local s = sprites[n]
-    love.graphics.draw(s.image, s.x, s.y, 0, 2, 2, s.largeur/2, s.hauteur/2)
+    love.graphics.draw(s.image, s.x, s.y, 0, 1, 1, s.largeur/2, s.hauteur/2)
   end
   
   -- On affiche l'énergie et les vies du héro
-  love.graphics.print("Energie : "..heros.energie, 10, hauteur - 20)
+  if heros.energie >= 0 then
+    love.graphics.print("Energie : "..heros.energie, 10, hauteur - 20)
+  end
   love.graphics.print("Score : "..heros.score, largeur - 100, hauteur - 20)
-  
 end
 
 function drawMenu()
@@ -537,27 +344,25 @@ function love.draw()
   end
 end
 
-function love.mousepressed(x,y,button)
-  if ecran_courant == "jeu" then
-    -- Appel de la fonction pour créer un tir
-    if button == 1 then
-      creerTir("heros", "laser1", heros.x, heros.y - heros.hauteur, 0, -10)
-    end
-  end
-end
 
 function love.keypressed(key)
+  
   if ecran_courant == "menu" then
     if key == "space" then
       ecran_courant = "jeu"
-      demarreJeu()
+      newGame.demarreJeu()
+    end
+  elseif ecran_courant == "jeu" then
+    -- Appel de la fonction pour créer un tir
+    if key == "kp0" or key == "space" then
+      creerTir("heros", "laser1", heros.x, heros.y - heros.hauteur/2, 0, -10)
     end
   elseif ecran_courant == "gameover" then
-    if key == "space" then
+    if key == "space" or "esc" or "enter" then
       love.event.quit( "restart" )
     end
   elseif ecran_courant == "victoire" then
-    if key == "space" then
+    if key == "space"  or "esc" or "enter" then
       love.event.quit( "restart" )
     end
   end
