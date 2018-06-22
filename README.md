@@ -20,9 +20,10 @@ Here are the features the workshop helps to put in place:
 - Boss music background (wink to NeoGeo ViewPoint game)
 - Boss behavior improvement (double and triple shoot according to its energie level, best shifting...)
 - Score, energie, newgame management
+- Graphics improvement (new background, new ships enemies and hero's ship, shadows...).
 
 # Click below to preview the game
 
-[![clic to play the preview game](https://img.youtube.com/vi/y5s97LbQfeE/0.jpg)](https://www.youtube.com/embed/y5s97LbQfeE?ecver=2)
+[![clic to play the preview game](https://img.youtube.com/vi/8bCIq8r4kBg/0.jpg)](https://www.youtube.com/embed/8bCIq8r4kBg?ecver=2)
 
 
