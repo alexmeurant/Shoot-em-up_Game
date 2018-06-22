@@ -29,6 +29,14 @@ local newGame = {}
       colonne = 4
       createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
       
+      ligne = 13
+      colonne = 6
+      createAlien(1, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+      
+      ligne = 16
+      colonne = 5
+      createAlien(2, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+      
       ligne = 19
       colonne = 9
       createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
@@ -51,6 +59,14 @@ local newGame = {}
       
       ligne = 35
       colonne = 4
+      createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+      
+      ligne = 35
+      colonne = 8
+      createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
+      
+      ligne = 35
+      colonne = 12
       createAlien(3, (colonne * 64) - 32, - 32 - ((ligne-1) * 64))
       
       -- Création du Boss
